@@ -28,6 +28,7 @@ func (x *ExampleExtender) Visit(ctx *gocrawl.URLContext, res *http.Response, doc
 	body := bufBody.Bytes()
 	url := ctx.NormalizedURL()
 
+	// Save data as a file with a name generated from sha1.
 	sha := sha1.New()
 	sha.Write([]byte(url.String()))
 	shaStr := base64.URLEncoding.EncodeToString(sha.Sum(nil))
