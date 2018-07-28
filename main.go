@@ -9,7 +9,7 @@ import (
 	"crypto/sha1"
 	"os"
 	"bytes"
-		"encoding/base64"
+	"encoding/base64"
 )
 
 // Only enqueue the yahoo news domain.
