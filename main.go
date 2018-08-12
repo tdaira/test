@@ -1,19 +1,21 @@
 package main
 
 import (
+	"bytes"
+	"crypto/sha1"
+	"encoding/base64"
+	"github.com/PuerkitoBio/goquery"
 	"github.com/tdaira/gocrawl"
 	"net/http"
-	"time"
-	"github.com/PuerkitoBio/goquery"
-	"crypto/sha1"
 	"os"
-	"bytes"
-	"encoding/base64"
+	"regexp"
 	"strings"
+	"time"
 )
 
 type ExampleExtender struct {
 	gocrawl.DefaultExtender
+	ValidURLRegex *regexp.Regexp
 }
 
 func (x *ExampleExtender) Visit(ctx *gocrawl.URLContext, res *http.Response, doc *goquery.Document) (interface{}, bool) {
@@ -27,27 +29,36 @@ func (x *ExampleExtender) Visit(ctx *gocrawl.URLContext, res *http.Response, doc
 	sha.Write([]byte(url.String()))
 	shaStr := base64.URLEncoding.EncodeToString(sha.Sum(nil))
 	outDir := "./data/" + strings.Replace(url.Host, ".", "_", -1)
-	if _, err := os.Stat(outDir); os.IsNotExist(err) {
-		os.Mkdir(outDir, os.ModePerm)
+	x.writeFileWithDir(outDir, shaStr, body)
+
+	return nil, true
+}
+
+func (x *ExampleExtender) Filter(ctx *gocrawl.URLContext, isVisited bool) bool {
+	return !isVisited && x.ValidURLRegex.MatchString(ctx.NormalizedURL().String())
+}
+
+func (x *ExampleExtender) writeFileWithDir(dir string, fileName string, body []byte) {
+	if _, err := os.Stat(dir); os.IsNotExist(err) {
+		os.Mkdir(dir, os.ModePerm)
 	}
-	file, err := os.Create(outDir + "/" + shaStr)
+	file, err := os.Create(dir + "/" + fileName)
 	if err != nil {
 		panic(err)
 	}
 	defer file.Close()
 	file.Write(body)
-
-	return nil, true
 }
 
 func main() {
-	opts := gocrawl.NewOptions(new(ExampleExtender))
+	opts := gocrawl.NewOptions(&ExampleExtender{
+		ValidURLRegex: regexp.MustCompile(`http://news\.yahoo\.co\.jp.*`)})
 
 	opts.RobotUserAgent = "Example"
 	opts.UserAgent = "Mozilla/5.0 (compatible; Example/1.0; +http://example.com)"
 
 	opts.CrawlDelay = 1 * time.Second
-	opts.LogFlags = gocrawl.LogEnqueued
+	opts.LogFlags = gocrawl.LogAll
 
 	opts.MaxVisits = 20
 
