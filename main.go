@@ -54,8 +54,8 @@ func main() {
 	opts := gocrawl.NewOptions(&ExampleExtender{
 		ValidURLRegex: regexp.MustCompile(`(http://news\.yahoo\.co\.jp/flash)|(http://headlines\.yahoo\.co\.jp.*)`)})
 
-	opts.RobotUserAgent = "Example"
-	opts.UserAgent = "Mozilla/5.0 (compatible; Example/1.0; +http://example.com)"
+	opts.RobotUserAgent = "MirageBot"
+	opts.UserAgent = "Mozilla/5.0 (compatible; MirageBot/1.0; +http://miragebot.com)"
 
 	opts.CrawlDelay = 1 * time.Second
 	opts.LogFlags = gocrawl.LogAll
