@@ -52,7 +52,7 @@ func (x *ExampleExtender) writeFileWithDir(dir string, fileName string, body []b
 
 func main() {
 	opts := gocrawl.NewOptions(&ExampleExtender{
-		ValidURLRegex: regexp.MustCompile(`(http://news\.yahoo\.co\.jp/flash)|(http://headlines\.yahoo\.co\.jp.*)`)})
+		ValidURLRegex: regexp.MustCompile(`(^http://news\.yahoo\.co\.jp/flash$)|(^http://headlines\.yahoo\.co\.jp/hl\?.*)`)})
 
 	opts.RobotUserAgent = "MirageBot"
 	opts.UserAgent = "Mozilla/5.0 (compatible; MirageBot/1.0; +http://miragebot.com)"
