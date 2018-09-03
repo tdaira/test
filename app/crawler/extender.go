@@ -1,4 +1,4 @@
-package main
+package crawler
 
 import (
 	"bytes"
@@ -10,15 +10,14 @@ import (
 	"os"
 	"regexp"
 	"strings"
-	"time"
 )
 
-type ExampleExtender struct {
+type MirageBotExtender struct {
 	gocrawl.DefaultExtender
 	ValidURLRegex *regexp.Regexp
 }
 
-func (x *ExampleExtender) Visit(ctx *gocrawl.URLContext, res *http.Response, doc *goquery.Document) (interface{}, bool) {
+func (x *MirageBotExtender) Visit(ctx *gocrawl.URLContext, res *http.Response, doc *goquery.Document) (interface{}, bool) {
 	bufBody := new(bytes.Buffer)
 	bufBody.ReadFrom(res.Body)
 	body := bufBody.Bytes()
@@ -34,11 +33,11 @@ func (x *ExampleExtender) Visit(ctx *gocrawl.URLContext, res *http.Response, doc
 	return nil, true
 }
 
-func (x *ExampleExtender) Filter(ctx *gocrawl.URLContext, isVisited bool) bool {
+func (x *MirageBotExtender) Filter(ctx *gocrawl.URLContext, isVisited bool) bool {
 	return !isVisited && x.ValidURLRegex.MatchString(ctx.NormalizedURL().String())
 }
 
-func (x *ExampleExtender) writeFileWithDir(dir string, fileName string, body []byte) {
+func (x *MirageBotExtender) writeFileWithDir(dir string, fileName string, body []byte) {
 	if _, err := os.Stat(dir); os.IsNotExist(err) {
 		os.Mkdir(dir, os.ModePerm)
 	}
@@ -48,21 +47,4 @@ func (x *ExampleExtender) writeFileWithDir(dir string, fileName string, body []b
 	}
 	defer file.Close()
 	file.Write(body)
-}
-
-func main() {
-	opts := gocrawl.NewOptions(&ExampleExtender{
-		ValidURLRegex: regexp.MustCompile(`(^http://news\.yahoo\.co\.jp/flash$)|(^http://headlines\.yahoo\.co\.jp/hl\?.*)`)})
-
-	opts.RobotUserAgent = "MirageBot"
-	opts.UserAgent = "Mozilla/5.0 (compatible; MirageBot/1.0; +http://miragebot.com)"
-
-	opts.CrawlDelay = 1 * time.Second
-	opts.LogFlags = gocrawl.LogAll
-	opts.SameHostOnly = false
-
-	opts.MaxVisits = 20
-
-	c := gocrawl.NewCrawlerWithOptions(opts)
-	c.Run([]string{"https://news.yahoo.co.jp/flash"})
 }
