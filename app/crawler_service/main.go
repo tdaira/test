@@ -29,10 +29,8 @@ func main() {
 		if err != nil {
 			fmt.Println("Unmarshal error: " + err.Error())
 		}
+		crawl(siteInfo)
 		pkg.Ack()
-		go func() {
-			crawl(siteInfo)
-		}()
 	}
 }
 
